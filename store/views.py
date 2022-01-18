@@ -1,20 +1,21 @@
-from tkinter import E
-from unicodedata import category
 from django.shortcuts import render
+from django.core.paginator import Paginator
 from carts.models import CartItem
 from store.models import Product
-from category.models import Category
 from carts.views import _cart_id
 
 def store(request, category_slug=None):
     products=None
     if category_slug:
-        products = Product.objects.filter(category__slug=category_slug).filter(is_available=True)
+        products = Product.objects.filter(category__slug=category_slug).filter(is_available=True).order_by('id')
         products_count = products.count()
     else:
-        products = Product.objects.all().filter(is_available=True)
-        products_count = products.count()
-    context = {'products': products, 'products_count': products_count}
+        products = Product.objects.all().filter(is_available=True).order_by('id')
+    paginator = Paginator(products, 3)
+    page_number = request.GET.get('page')
+    paged_product = paginator.get_page(page_number)
+    products_count = products.count()
+    context = {'products': paged_product, 'products_count': products_count}
     return render(request, 'store/store.html', context)
 
 def product_detail(request, category_slug, product_slug):

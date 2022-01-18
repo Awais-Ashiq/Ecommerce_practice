@@ -59,7 +59,7 @@ def cart(request, total=0, quantity=0, cart_item=None):
             total += (cart_item.product.price * cart_item.quantity)
             quantity = cart_item.quantity
             cart_items_count += quantity
-    except:
+    except Cart.DoesNotExist:
         pass
     context = {
         'total':total,
