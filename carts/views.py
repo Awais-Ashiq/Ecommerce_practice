@@ -42,18 +42,29 @@ def remove_cart(request, product_id):
     cart_item.save()
     return redirect('cart')
 
+def remove_cart_item(request, product_id):
+    product = Product.objects.get(pk=product_id)
+    cart = Cart.objects.get(cart_id=_cart_id(request))
+    cart_item = CartItem.objects.get(product=product, cart=cart)
+    cart_item.delete()
+    return redirect('cart')
+
+
 def cart(request, total=0, quantity=0, cart_item=None):
     try:
         cart = Cart.objects.get(cart_id=_cart_id(request))
         cart_items = CartItem.objects.filter(cart=cart, is_active=True)
+        cart_items_count = 0
         for cart_item in cart_items:
             total += (cart_item.product.price * cart_item.quantity)
             quantity = cart_item.quantity
+            cart_items_count += quantity
     except:
         pass
     context = {
         'total':total,
         'quantity':quantity,
         'cart_items': cart_items,
+        'cart_items_count':cart_items_count,
     }
     return render(request, 'store/cart.html', context)
