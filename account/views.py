@@ -46,6 +46,7 @@ def register(request):
             messages.success(request,
              "An email with a verification has been sent to your email acccount please verify your account"
              )
+            return redirect('/accounts/login/?command=verification&email='+email)
     else:
         form = RegistarionForm()
     context = {
@@ -60,7 +61,7 @@ def login(request):
         user = auth.authenticate(email=email, password=password)
         if user:
             auth.login(request, user)
-            return redirect('home')
+            return redirect('dashboard')
         else:
             messages.error(request, "Invalid Login Credentials")
             return redirect('login')
@@ -89,3 +90,30 @@ def activate(request, uidb64, token):
     else:
         messages.error(request, "Invalid Activation Link")
     return redirect('register')
+
+@login_required(login_url='login')
+def dashboard(request):
+    return render(request, 'accounts/dashboard.html')
+
+
+def forgot_password(request):
+    if request.method == 'POST':
+        email = request.POST['email']
+        user = Account.objects.filter(email=email)
+        if user.exists():
+            current_site = get_current_site(request)
+            mail_subject = 'Password Reset Field'
+            message = render_to_string('accounts/verification.html',{
+                'user': user[0].first_name,
+                'domain': current_site,
+                'uid': urlsafe_base64_encode(force_bytes(user[0].pk)),
+                'token': default_token_generator.make_token(user[0]),
+            })
+            to_email = email
+            send_email = EmailMessage(mail_subject, message, to=[to_email])
+            send_email.send()
+            messages.success(request,
+                "An email with a verification has been sent to your email acccount please reset your account"
+                )
+        return redirect('/accounts/login/?command=verification&email='+email)
+    return render(request, 'accounts/forgot_password.html')
