@@ -5,9 +5,13 @@ def cart_items_count(request):
         return {}
     else:
         try:
-            cart = Cart.objects.get(cart_id=_cart_id(request))
-            cart_items = CartItem.objects.filter(cart__cart_id = cart, is_active=True)
+            if request.user.is_authenticated:
+                cart_items = CartItem.objects.all().filter(user=request.user)
+            else:
+                cart = Cart.objects.get(cart_id=_cart_id(request))
+                cart_items = CartItem.objects.all().filter(cart=cart, is_active=True)
             count=0
+            print("cart_items: ", list(cart_items))
             for cart_item in cart_items:
                 count += cart_item.quantity
         except Cart.DoesNotExist:
