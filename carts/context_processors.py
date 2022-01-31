@@ -11,7 +11,6 @@ def cart_items_count(request):
                 cart = Cart.objects.get(cart_id=_cart_id(request))
                 cart_items = CartItem.objects.all().filter(cart=cart, is_active=True)
             count=0
-            print("cart_items: ", list(cart_items))
             for cart_item in cart_items:
                 count += cart_item.quantity
         except Cart.DoesNotExist:

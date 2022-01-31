@@ -1,5 +1,6 @@
 import datetime
-from orders.models import Order
+
+from .models import Order
 from carts.models import Cart, CartItem
 from .forms import OrderForm
 
@@ -55,11 +56,21 @@ def place_order(request):
             order_number = current_date + str(data.id)
             data.order_number = order_number
             data.save()
+            return redirect("payments")
 
-            print("data: ", data)
-    
-        print("Data")
     else:
         return redirect('checkout')
 
     return redirect('checkout')
+
+def payments(request):
+    current_user = request.user
+    cart_items = CartItem.objects.filter(user=current_user)
+    order = Order.objects.get(user=current_user) 
+    context = {
+        "cart_items": cart_items,
+        "order": order,
+        "grand_total": round( order.order_total + order.tax,2)
+    }
+
+    return render(request, "orders/payments.html", context)

@@ -106,7 +106,6 @@ def login(request):
                 query = requests.utils.urlparse(url).query
                 params = dict(x.split('=') for x in query.split("&"))
                 if "next" in params:
-                    print("query: ", params)
                     
                     return redirect(params['next'])
                 else:
@@ -152,8 +151,7 @@ def forgot_password(request):
     if request.method == 'POST':
         email = request.POST['email']
         user = Account.objects.filter(email=email)
-        print("User: ", user[0])
-        print("PK: ", user[0].id)
+      
         if user.exists():
             current_site = get_current_site(request)
             mail_subject = 'Password Reset Field'
@@ -181,7 +179,6 @@ def resetpassword_validate(request, uidb64, token):
         user = Account._default_manager.get(pk=uid)
     except (TypeError, ValueError, Account.DoesNotExist):
         user = None
-    print("user: ", urlsafe_base64_decode(uidb64).decode())
     if user and default_token_generator.check_token(user, token):
         request.session['uid'] = uid
         messages.success(request, "Please Reset Your Password.")
